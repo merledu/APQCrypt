@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Runtime/generated data
+data/traffic.pcapng
+data/features.csv
+data/results.csv
+data/encrypted_results.csv
+data/status.json
+data/timings.json
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# OS/editor files
+.DS_Store
+*.swp
+.vscode/
+.idea/

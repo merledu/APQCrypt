@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APQCRYPT — Traffic Sensitivity Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0F1C;
+    --surface: #121A2E;
+    --surface-2: #1B2438;
+    --border: #283151;
+    --text: #E8EDF5;
+    --text-muted: #7E8AA8;
+    --accent: #4DD8C4;
+    --accent-dim: rgba(77,216,196,0.15);
+    --low: #4ADE80;
+    --medium: #FBBF24;
+    --high: #FB7185;
+    --error: #F87171;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(77,216,196,0.06), transparent 40%),
+      radial-gradient(circle at 85% 100%, rgba(251,191,36,0.04), transparent 40%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 32px 24px 64px;
+  }
+
+  .wrap{ max-width: 1080px; margin: 0 auto; }
+
+  /* ============ HEADER ============ */
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand-mark{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+  }
+
+  .brand-mark .dot{
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-dim);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot{
+    0%, 100% { box-shadow: 0 0 0 4px var(--accent-dim); }
+    50% { box-shadow: 0 0 0 8px transparent; }
+  }
+
+  h1{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  h1 span{ color: var(--accent); }
+
+  .tagline{
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .live-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    background: var(--surface);
+  }
+  .live-pill .ring{
+    width:8px; height:8px; border-radius:50%;
+    background: var(--text-muted);
+  }
+  .live-pill.idle .ring{ background:#4B5572; }
+  .live-pill.running .ring{ background: var(--accent); animation: pulse-dot 1.2s infinite; }
+  .live-pill.done .ring{ background: var(--low); }
+  .live-pill.error .ring{ background: var(--error); }
+
+  /* ============ PIPELINE VISUAL ============ */
+  .pipeline-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+  }
+
+  .pipeline-card .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .stages{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .track{
+    position:absolute;
+    top: 19px; left: 5%; right: 5%;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+    overflow: hidden;
+  }
+  .track-fill{
+    position:absolute; top:0; left:0; height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--accent), #2DD4BF);
+    transition: width 0.6s ease;
+  }
+  .particle{
+    position:absolute;
+    top:-2px;
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    opacity:0;
+  }
+  .particle.run{
+    opacity:1;
+    animation: travel 1.6s linear infinite;
+  }
+  @keyframes travel{
+    0%{ left:0%; opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ left:100%; opacity:0; }
+  }
+
+  .stage{
+    position:relative; z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 10px;
+    width: 110px;
+    text-align:center;
+  }
+
+  .stage .node{
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px; font-weight:700;
+    color: var(--text-muted);
+    transition: all 0.4s ease;
+  }
+
+  .stage.active .node{
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 18px rgba(77,216,196,0.35);
+  }
+  .stage.done .node{
+    border-color: var(--low);
+    color: var(--low);
+    background: rgba(74,222,128,0.1);
+  }
+  .stage.error .node{
+    border-color: var(--error);
+    color: var(--error);
+    background: rgba(248,113,113,0.1);
+  }
+
+  .stage .stage-name{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight:600;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .stage.active .stage-name, .stage.done .stage-name{ color: var(--text); }
+
+  .status-line{
+    margin-top: 20px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    min-height: 20px;
+    word-break: break-word;
+  }
+  .status-line.error{ color: var(--error); }
+  .status-line.done{ color: var(--low); }
+
+  /* ============ CONTROLS ============ */
+  .controls{
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+
+  .btn{
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    background: var(--accent);
+    color: #06201C;
+    border: none;
+    border-radius: 10px;
+    padding: 16px 28px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s;
+    box-shadow: 0 8px 24px -8px rgba(77,216,196,0.5);
+  }
+  .btn:hover:not(:disabled){ transform: translateY(-2px); }
+  .btn:active:not(:disabled){ transform: translateY(0px); }
+  .btn:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .diagnostics{
+    flex:1;
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    align-items:center;
+  }
+  .diag-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .check{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    display:flex; align-items:center; gap:6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+  .check .dot{ width:7px; height:7px; border-radius:50%; background: var(--border); }
+  .check.ok{ color: var(--text); }
+  .check.ok .dot{ background: var(--low); }
+  .check.bad .dot{ background: var(--error); }
+
+  /* ============ RESULTS GRID ============ */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .card .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .big-number{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 40px;
+    font-weight: 800;
+    line-height:1;
+  }
+  .big-number .unit{
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .sub{
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* bars */
+  .bar-row{ margin-bottom: 10px; }
+  .bar-row:last-child{ margin-bottom: 0; }
+  .bar-head{
+    display:flex; justify-content: space-between;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+  }
+  .bar-head b{ color: var(--text); font-weight:600; }
+  .bar-track{
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%; border-radius:999px;
+    transition: width 0.6s ease;
+  }
+  .fill-tcp{ background: var(--accent); }
+  .fill-udp{ background: #818CF8; }
+  .fill-http{ background: #34D399; }
+  .fill-https{ background: #2DD4BF; }
+  .fill-dns{ background: #C084FC; }
+  .fill-icmp{ background: var(--medium); }
+  .fill-arp{ background: #94A3B8; }
+  .fill-other{ background: #4B5572; }
+  .fill-low{ background: var(--low); }
+  .fill-medium{ background: var(--medium); }
+  .fill-high{ background: var(--high); }
+
+  /* timings */
+  .timing-list{ display:flex; flex-direction:column; gap:10px; }
+  .timing-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size: 13px;
+  }
+  .timing-row .t-name{ color: var(--text-muted); }
+  .timing-row .t-val{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+  }
+  .timing-row.total{
+    border-top: 1px dashed var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+  .timing-row.total .t-val{ color: var(--accent); }
+
+  .empty-note{
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family:'JetBrains Mono', monospace;
+  }
+
+  /* ============ ACTIONS / DOWNLOADS ============ */
+  .actions-row{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: -8px 0 16px;
+  }
+  .last-run-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .action-btns{ display:flex; gap:10px; flex-wrap:wrap; }
+  .ghost-btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .ghost-btn:hover{ border-color: var(--accent); color: var(--accent); }
+  .ghost-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  /* ============ RESULTS TABLE ============ */
+  .table-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .table-card.visible{ display:block; }
+  .table-card .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .table-scroll{
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  thead th{
+    text-align:left;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+  tbody td{
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tbody tr:last-child td{ border-bottom: none; }
+  tbody tr:hover{ background: var(--surface-2); }
+
+  .tier-badge{
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .tier-LOW{ background: rgba(74,222,128,0.15); color: var(--low); }
+  .tier-MEDIUM{ background: rgba(251,191,36,0.15); color: var(--medium); }
+  .tier-HIGH{ background: rgba(251,113,133,0.15); color: var(--high); }
+
+  footer{
+    text-align:center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family:'JetBrains Mono', monospace;
+    margin-top: 32px;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 640px){
+    .stage{ width: 70px; }
+    .stage .stage-name{ font-size:10px; }
+    h1{ font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="brand-mark">
+        <div class="dot"></div>
+        <h1>APQCRYPT<span>::</span>PIPELINE</h1>
+      </div>
+      <div class="tagline">capture → extract → classify · network traffic confidentiality scoring</div>
+    </div>
+    <div class="live-pill idle" id="livePill">
+      <div class="ring"></div>
+      <span id="livePillText">IDLE</span>
+    </div>
+  </header>
+
+  <!-- PIPELINE VISUAL -->
+  <div class="pipeline-card">
+    <div class="label">Pipeline status</div>
+    <div class="stages">
+      <div class="track">
+        <div class="track-fill" id="trackFill"></div>
+        <div class="particle" id="particle"></div>
+      </div>
+      <div class="stage" id="stage-capture">
+        <div class="node">①</div>
+        <div class="stage-name">CAPTURE</div>
+      </div>
+      <div class="stage" id="stage-features">
+        <div class="node">②</div>
+        <div class="stage-name">EXTRACT</div>
+      </div>
+      <div class="stage" id="stage-sensitivity">
+        <div class="node">③</div>
+        <div class="stage-name">CLASSIFY</div>
+      </div>
+      <div class="stage" id="stage-policy">
+        <div class="node">④</div>
+        <div class="stage-name">POLICY</div>
+      </div>
+      <div class="stage" id="stage-encryption">
+        <div class="node">⑤</div>
+        <div class="stage-name">ENCRYPT</div>
+      </div>
+      <div class="stage" id="stage-finished">
+        <div class="node">✓</div>
+        <div class="stage-name">DONE</div>
+      </div>
+    </div>
+    <div class="status-line" id="statusLine">Waiting to start. Run diagnostics to confirm the environment is ready.</div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn" id="startBtn" onclick="startPipeline()">▶ Start pipeline</button>
+    <div class="diagnostics" id="diagnostics">
+      <span class="diag-label">Environment</span>
+      <span class="check" id="diag-sudo"><span class="dot"></span> sudo</span>
+      <span class="check" id="diag-mininet"><span class="dot"></span> mininet</span>
+      <span class="check" id="diag-tshark"><span class="dot"></span> tshark</span>
+      <span class="check" id="diag-data"><span class="dot"></span> data dir</span>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-row">
+    <div class="last-run-tag" id="lastRunTag">Showing results from last saved run</div>
+    <div class="action-btns">
+    
+      <a class="ghost-btn" href="/download/packets" download>⬇ traffic.pcapng</a>
+      <a class="ghost-btn" href="/download/policy" download>⬇ policy.csv</a>
+      <a class="ghost-btn" href="/download/encrypted" download>⬇ encrypted_results.csv</a>
+      
+    </div>
+  </div>
+
+  <!-- RESULTS TABLE -->
+  <div class="table-card" id="tableCard">
+    <div class="label">
+      <span>Results · first 50 rows</span>
+      <span id="tableRowCount"></span>
+    </div>
+    <div class="table-scroll">
+      <table id="resultsTable"></table>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="grid">
+    <div class="card">
+      <div class="label">Packets captured</div>
+      <div class="big-number" id="totalPackets">—</div>
+      <div class="sub" id="captureFile">No capture yet</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Protocol mix</div>
+      <div id="protocolBars">
+        <div class="empty-note">Run the pipeline to see protocol breakdown</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Sensitivity distribution</div>
+      <div id="sensitivityBars">
+        <div class="empty-note">Run the pipeline to see classification results</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Module timings (s)</div>
+      <div class="timing-list" id="timingList">
+        <div class="empty-note">No timing data yet</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Policy decisions</div>
+      <div id="policyBars">
+        <div class="empty-note">Run the pipeline to see policy decisions</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Selected algorithms</div>
+      <div id="algorithmBars">
+        <div class="empty-note">Run the pipeline to see algorithm selection</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Decision basis</div>
+      <div id="decisionBasis">
+        <div class="empty-note">Run the pipeline to see resource status</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Encryption summary</div>
+      <div id="encryptionSummary">
+        <div class="empty-note">Run the pipeline to see encryption results</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    output files · data/traffic.pcapng · data/features.csv · data/results.csv · data/policy.csv · data/encrypted_results.csv
+  </footer>
+
+</div>
+
+<script>
+const STAGE_ORDER = ['capture','features','sensitivity','policy','encryption','finished'];
+
+function setPill(state, text){
+  const pill = document.getElementById('livePill');
+  pill.className = 'live-pill ' + state;
+  document.getElementById('livePillText').textContent = text;
+}
+
+function setStages(currentStageKey, isError){
+  const idx = STAGE_ORDER.indexOf(currentStageKey);
+  STAGE_ORDER.forEach((key, i) => {
+    const el = document.getElementById('stage-' + key);
+    el.className = 'stage';
+    if (isError && i === idx){
+      el.className = 'stage error';
+    } else if (i < idx || (i === idx && key === 'finished')){
+      el.className = 'stage done';
+    } else if (i === idx){
+      el.className = 'stage active';
+    }
+  });
+
+  // progress track fill based on stage index (rough visual mapping)
+  const fillPct = isError ? (idx / (STAGE_ORDER.length-1)) * 100 : (idx / (STAGE_ORDER.length-1)) * 100;
+  document.getElementById('trackFill').style.width = fillPct + '%';
+
+  const particle = document.getElementById('particle');
+  if (!isError && currentStageKey !== 'finished' && idx >= 0){
+    particle.classList.add('run');
+  } else {
+    particle.classList.remove('run');
+  }
+}
+
+function mapStageToKey(stage){
+  if (!stage) return null;
+  const s = stage.toLowerCase();
+  if (s.includes('capture')) return 'capture';
+  if (s.includes('feature')) return 'features';
+  if (s.includes('sensitiv')) return 'sensitivity';
+  if (s.includes('policy')) return 'policy';
+  if (s.includes('encrypt')) return 'encryption';
+  if (s.includes('finish')) return 'finished';
+  if (s.includes('error')) return 'error';
+  return null;
+}
+
+let polling = null;
+let pollingStartedAt = null;
+const MAX_POLL_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+async function refreshDiagnostics(){
+  try{
+    const res = await fetch('/diagnostics');
+    const d = await res.json();
+    setCheck('diag-sudo', d.sudo_access);
+    setCheck('diag-mininet', d.mininet_installed);
+    setCheck('diag-tshark', d.tshark_installed);
+    setCheck('diag-data', d.data_dir_exists);
+  }catch(e){
+    console.error('diagnostics failed', e);
+  }
+}
+
+function setCheck(id, ok){
+  const el = document.getElementById(id);
+  el.classList.remove('ok','bad');
+  el.classList.add(ok ? 'ok' : 'bad');
+}
+
+async function startPipeline(){
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.textContent = '● Running…';
+  setPill('running', 'RUNNING');
+  setStages('capture', false);
+  document.getElementById('statusLine').className = 'status-line';
+  document.getElementById('statusLine').textContent = 'Starting pipeline…';
+
+  try{
+    const res = await fetch('/start-pipeline');
+    const d = await res.json().catch(() => ({}));
+
+    if (!res.ok){
+      document.getElementById('statusLine').className = 'status-line error';
+      document.getElementById('statusLine').textContent =
+        (d.message || `Pipeline could not start (HTTP ${res.status})`);
+      btn.disabled = false;
+      btn.textContent = '▶ Start pipeline';
+      setPill('error', 'ERROR');
+      setStages('capture', true);
+      return;
+    }
+  }catch(e){
+    document.getElementById('statusLine').className = 'status-line error';
+    document.getElementById('statusLine').textContent = 'Could not reach the server: ' + e;
+    btn.disabled = false;
+    btn.textContent = '▶ Start pipeline';
+    setPill('error', 'ERROR');
+    return;
+  }
+
+  if (polling) clearInterval(polling);
+  pollingStartedAt = Date.now();
+  polling = setInterval(pollStatus, 1200);
+  pollStatus();
+}
+
+async function pollStatus(){
+  if (pollingStartedAt && (Date.now() - pollingStartedAt) > MAX_POLL_DURATION_MS){
+    setPill('error', 'ERROR');
+    const statusEl = document.getElementById('statusLine');
+    statusEl.className = 'status-line error';
+    statusEl.textContent = 'Pipeline timed out — no update for 5 minutes. Check the server logs.';
+    setStages('capture', true);
+    finishPolling();
+    return;
+  }
+
+  try{
+    const res = await fetch('/status');
+    const d = await res.json();
+    const stage = d.stage || '';
+    const key = mapStageToKey(stage);
+    const statusEl = document.getElementById('statusLine');
+
+    if (key === 'error'){
+      setStages('capture', true); // visually flag first stage as error point
+      setPill('error', 'ERROR');
+      statusEl.className = 'status-line error';
+      statusEl.textContent = d.message || 'Pipeline error';
+      finishPolling();
+      return;
+    }
+
+    if (key){
+      setStages(key, false);
+    }
+
+    statusEl.className = 'status-line';
+    statusEl.textContent = (d.message || '') + (d.progress != null ? '  ·  ' + d.progress + '%' : '');
+
+    if (key === 'finished'){
+      setPill('done', 'COMPLETE');
+      statusEl.className = 'status-line done';
+      tableLoaded = false; // force reload of results table on next view
+      finishPolling();
+      loadResults();
+      document.getElementById('lastRunTag').textContent = 'Showing results from this run';
+      if (tableVisible){
+        loadResultsTable();
+      }
+    }
+  }catch(e){
+    console.error('status poll failed', e);
+  }
+}
+
+function finishPolling(){
+  if (polling) clearInterval(polling);
+  polling = null;
+  const btn = document.getElementById('startBtn');
+  btn.disabled = false;
+  btn.textContent = '▶ Start pipeline';
+}
+
+async function loadResults(){
+  try{
+    const res = await fetch('/results');
+    const d = await res.json();
+
+    if (!d.total_packets){
+      refreshDownloadLinks(false);
+      document.getElementById('lastRunTag').textContent = 'No pipeline run yet';
+      return;
+    }
+
+    refreshDownloadLinks(true);
+
+    // total packets
+    document.getElementById('totalPackets').innerHTML =
+      (d.total_packets ?? '—') + '<span class="unit">packets</span>';
+    document.getElementById('captureFile').textContent = d.packet_file || '';
+
+    // protocol bars
+    renderBars('protocolBars', d.protocols, {
+      TCP: 'fill-tcp', UDP: 'fill-udp', HTTP: 'fill-http',
+      HTTPS: 'fill-https', DNS: 'fill-dns', ICMP: 'fill-icmp',
+      ARP: 'fill-arp', OTHER: 'fill-other'
+    }, d.total_packets);
+
+    // sensitivity bars
+    renderBars('sensitivityBars', d.sensitivity, {
+      LOW: 'fill-low', MEDIUM: 'fill-medium', HIGH: 'fill-high'
+    }, d.total_packets);
+
+    // policy distribution bars
+    renderBars('policyBars', d.policies, {
+      'High Security Policy': 'fill-high',
+      'Standard Security Policy': 'fill-medium',
+      'Default Security Policy': 'fill-low'
+    }, d.total_packets);
+
+    // algorithm distribution bars
+    renderBars('algorithmBars', d.algorithms, {}, d.total_packets);
+
+    // decision basis: resource status + plain-language explanation
+    renderDecisionBasis(d.resource_status, d.policies);
+
+    // encryption summary
+    renderEncryptionSummary(d.encryption_summary);
+
+    // timings
+    renderTimings(d.module_timings);
+
+  }catch(e){
+    console.error('results load failed', e);
+  }
+}
+
+function renderEncryptionSummary(summary){
+  const container = document.getElementById('encryptionSummary');
+  if (!summary || !summary.total_packets){
+    container.innerHTML = '<div class="empty-note">Run the pipeline to see encryption results</div>';
+    return;
+  }
+  container.innerHTML = `
+    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.9;">
+      <div>${summary.total_packets} packets encrypted across <b>${summary.total_flows}</b> flows</div>
+      <div style="color:var(--text-muted); margin-top:6px;">
+        <b style="color:var(--high)">${summary.pqc_handshakes}</b> real ML-KEM (post-quantum) handshakes
+      </div>
+      <div style="color:var(--text-muted); margin-top:10px; font-size:12px; line-height:1.7;">
+        Total handshake time: ${summary.total_handshake_ms} ms<br>
+        Total encrypt time: ${summary.total_encrypt_ms} ms<br>
+        Total ciphertext: ${summary.total_ciphertext_bytes.toLocaleString()} bytes
+      </div>
+      <div style="color:var(--text-muted); margin-top:10px; font-size:12px; line-height:1.6;">
+        Each flow's key (PQC-derived for HIGH, random otherwise) is established once and reused for all its packets — not re-negotiated per packet.
+      </div>
+    </div>`;
+}
+
+function renderDecisionBasis(resourceStatus, policies){
+  const container = document.getElementById('decisionBasis');
+  if (!resourceStatus){
+    container.innerHTML = '<div class="empty-note">Run the pipeline to see resource status</div>';
+    return;
+  }
+  const statusColor = resourceStatus.status === 'CONSTRAINED' ? 'var(--high)' : 'var(--low)';
+  const explanation = resourceStatus.status === 'CONSTRAINED'
+    ? 'System resources are under pressure — the engine favors lighter/faster algorithms (e.g. ChaCha20 over the PQC handshake) even for higher-sensitivity traffic, to keep the pipeline responsive.'
+    : 'System resources are available — the engine can afford stronger protection, including the ML-KEM post-quantum handshake for High-sensitivity traffic.';
+  container.innerHTML = `
+    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7;">
+      <div>Resource status:
+        <b style="color:${statusColor}">${resourceStatus.status}</b>
+      </div>
+      <div style="color:var(--text-muted); margin-top:4px;">
+        CPU ${resourceStatus.cpu_percent ?? '—'}% · Memory ${resourceStatus.memory_percent ?? '—'}%
+      </div>
+      <div style="color:var(--text-muted); margin-top:10px; font-size:12px; line-height:1.6;">
+        ${explanation}
+      </div>
+      <div style="color:var(--text-muted); margin-top:10px; font-size:12px; line-height:1.6;">
+        Each packet's algorithm is chosen from its Sensitivity tier (HIGH/MEDIUM/LOW) crossed with this resource status — see the Policy decisions and Selected algorithms cards.
+      </div>
+    </div>`;
+}
+
+function renderBars(containerId, dataObj, classMap, total){
+  const container = document.getElementById(containerId);
+  if (!dataObj || Object.keys(dataObj).length === 0){
+    container.innerHTML = '<div class="empty-note">No data available</div>';
+    return;
+  }
+  const t = total || Object.values(dataObj).reduce((a,b)=>a+b,0) || 1;
+  let html = '';
+  for (const [key, count] of Object.entries(dataObj)){
+    const pct = Math.round((count / t) * 100);
+    const cls = classMap[key] || 'fill-other';
+    html += `
+      <div class="bar-row">
+        <div class="bar-head"><span>${key}</span><b>${count} · ${pct}%</b></div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderTimings(timings){
+  const container = document.getElementById('timingList');
+  if (!timings){
+    container.innerHTML = '<div class="empty-note">No timing data yet</div>';
+    return;
+  }
+  let html = '';
+  const order = ['Packet Capture','Feature Extraction','Sensitivity Analysis','Policy Engine','Encryption Engine'];
+  for (const name of order){
+    if (timings[name] != null){
+      html += `<div class="timing-row"><span class="t-name">${name}</span><span class="t-val">${timings[name]}s</span></div>`;
+    }
+  }
+  if (timings['Total Execution'] != null){
+    html += `<div class="timing-row total"><span class="t-name">Total</span><span class="t-val">${timings['Total Execution']}s</span></div>`;
+  }
+  container.innerHTML = html || '<div class="empty-note">No timing data yet</div>';
+}
+
+let tableLoaded = false;
+let tableVisible = false;
+
+async function toggleTable(){
+  const card = document.getElementById('tableCard');
+  if (!tableLoaded){
+    await loadResultsTable();
+  }
+  tableVisible = !tableVisible;
+  card.classList.toggle('visible', tableVisible);
+  document.getElementById('viewResultsBtn').textContent =
+    tableVisible ? '⊟ Hide results table' : '⊞ View results table';
+}
+
+async function loadResultsTable(){
+  try{
+    const res = await fetch('/view/results');
+    const d = await res.json();
+    const table = document.getElementById('resultsTable');
+    const countEl = document.getElementById('tableRowCount');
+
+   if (d.error || !d.columns || d.columns.length === 0){
+      table.innerHTML = '';
+      countEl.textContent = '';
+      document.getElementById('tableCard').querySelector('.table-scroll').innerHTML =
+        '<div class="empty-note" style="padding:16px;">No results.csv found yet — run the pipeline first.</div>';
+      tableLoaded = true;
+      return;
+    }
+
+    const rows = d.data || [];
+    countEl.textContent = `showing ${rows.length} of ${d.total_rows}`;
+
+    let thead = '<thead><tr>' + d.columns.map(c => `<th>${c}</th>`).join('') + '</tr></thead>';
+    let tbody = '<tbody>' + rows.map(rowObj => {
+      return '<tr>' + d.columns.map(col => {
+        const cell = rowObj[col];
+        const display = (cell === null || cell === undefined || cell === '') ? '—' : cell;
+        if (col === 'Sensitivity' && ['LOW','MEDIUM','HIGH'].includes(cell)){
+          return `<td><span class="tier-badge tier-${cell}">${cell}</span></td>`;
+        }
+        return `<td>${display}</td>`;
+      }).join('') + '</tr>';
+    }).join('') + '</tbody>';
+
+    table.innerHTML = thead + tbody;
+    tableLoaded = true;
+  }catch(e){
+    console.error('results table load failed', e);
+  }
+}
+
+function refreshDownloadLinks(hasResults){
+  document.querySelectorAll('.action-btns a.ghost-btn').forEach(a => {
+    if (hasResults){
+      a.removeAttribute('aria-disabled');
+      a.style.opacity = '';
+      a.style.pointerEvents = '';
+    } else {
+      a.setAttribute('aria-disabled','true');
+      a.style.opacity = '0.4';
+      a.style.pointerEvents = 'none';
+    }
+  });
+}
+
+// init
+refreshDiagnostics();
+refreshDownloadLinks(false);
+document.getElementById('lastRunTag').textContent = 'No pipeline run yet — click Start pipeline';
+
+</script>
+</body>
+</html>
+
+
