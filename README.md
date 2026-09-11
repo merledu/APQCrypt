@@ -1,2 +1,633 @@
-# APQCrypt
-Post Quantum Adaptive Encryption Secure Communication System
+<img width="1107" height="672" alt="image" src="https://github.com/user-attachments/assets/735b39b4-7690-40e7-b341-1c0342baf2ef" /># APQCrypt
+
+### Post-Quantum Adaptive Encryption Secure Communication System
+
+APQCrypt is a cybersecurity research and prototype system that combines **post-quantum cryptography, network traffic analysis, sensitivity classification, and adaptive encryption policies** to provide security-aware protection for network traffic.
+
+Instead of applying the same encryption strategy to every packet or flow, APQCrypt analyzes observed traffic and dynamically selects an appropriate protection policy based on the **sensitivity of the traffic and current system resource conditions**.
+
+The project was developed as a Final Year Project with a focus on practical **network security, post-quantum cryptography, adaptive security, and performance-aware encryption**.
+
+---
+
+## Key Idea
+
+Traditional encryption systems commonly apply a fixed cryptographic configuration to network traffic.
+
+APQCrypt explores a different approach:
+
+> **Analyze → Classify → Decide → Encrypt → Monitor**
+
+Network traffic is captured and converted into features. The system evaluates the sensitivity of the traffic, considers resource conditions, applies a security policy, and selects an encryption mechanism accordingly.
+
+This allows the system to explore the trade-off between:
+
+* Security
+* Computational cost
+* Resource availability
+* Encryption performance
+
+---
+
+## System Architecture
+
+```text
+                  ┌─────────────────────┐
+                  │   Network Traffic   │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │   Packet Capture    │
+                  │       Module        │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Feature Extraction  │
+                  │       Module        │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Sensitivity Engine  │
+                  │ / ML Classification │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │    Policy Engine    │
+                  │ Security + Resources│
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Encryption Engine   │
+                  │                     │
+                  │ AES-256-GCM         │
+                  │ ChaCha20            │
+                  │ ML-KEM Key Exchange │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │ Results / Dashboard │
+                  └─────────────────────┘
+```
+
+---
+
+## Core Components
+
+### 1. Packet Capture
+
+Captures network traffic and produces packet capture data for analysis.
+
+The project supports a Mininet-based network environment for generating controlled network traffic.
+
+**Main file:**
+
+```text
+packet_capture.py
+```
+
+---
+
+### 2. Feature Extraction
+
+Processes captured packets and extracts traffic characteristics used by the sensitivity analysis stage.
+
+The implementation works with protocols including:
+
+* TCP
+* UDP
+* ICMP
+* ARP
+* IP traffic
+
+**Main file:**
+
+```text
+feature_extraction.py
+```
+
+---
+
+### 3. Sensitivity Engine
+
+The Sensitivity Engine evaluates network traffic and assigns a sensitivity classification.
+
+The current system categorizes traffic into levels such as:
+
+* **HIGH**
+* **MEDIUM**
+* **LOW**
+
+A trained model is included in:
+
+```text
+sensitivity_model.pkl
+```
+
+The classification stage provides the basis for the subsequent encryption policy decision.
+
+**Main file:**
+
+```text
+sensitivity_engine.py
+```
+
+---
+
+### 4. Policy Engine
+
+The Policy Engine combines the sensitivity classification with the current resource state to determine an appropriate encryption policy.
+
+This allows the system to consider both:
+
+```text
+Security Requirement
+        +
+System Resource Availability
+        ↓
+Encryption Decision
+```
+
+**Main file:**
+
+```text
+policy_engine.py
+```
+
+---
+
+### 5. Resource Monitoring
+
+APQCrypt monitors system conditions such as:
+
+* CPU utilization
+* Memory utilization
+* Resource availability
+
+The resource state can influence the encryption policy when the system is under constrained conditions.
+
+---
+
+### 6. Encryption Engine
+
+The Encryption Engine applies the encryption decision generated by the policy layer.
+
+The current implementation supports:
+
+* **AES-256-GCM**
+* **ChaCha20**
+* **ML-KEM-based post-quantum key establishment**
+
+The system uses the established key for the relevant flow rather than performing a new key establishment operation for every individual packet.
+
+**Main file:**
+
+```text
+encryption_engine.py
+```
+
+---
+
+### 7. Dashboard
+
+A Flask-based dashboard provides visibility into the system's operation and results.
+
+The dashboard can present information including:
+
+* Number of packets
+* Number of flows
+* Protocol distribution
+* Sensitivity classification
+* Resource status
+* Selected encryption algorithms
+* Post-quantum handshakes
+* Handshake timing
+* Pipeline execution timing
+
+**Main files:**
+
+```text
+app.py
+main_controller.py
+templates/index.html
+```
+
+---
+
+## Post-Quantum Cryptography
+
+A major component of APQCrypt is the integration of **post-quantum key establishment**.
+
+The project uses **ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism)** as part of its post-quantum cryptographic design.
+
+The purpose is to investigate how post-quantum key establishment can be incorporated into an adaptive network security architecture while considering the computational cost associated with cryptographic operations.
+
+This makes APQCrypt relevant to the transition toward **quantum-resistant secure communication**.
+
+---
+
+## Adaptive Encryption Concept
+
+The central research idea is that network traffic does not necessarily require an identical security treatment in every situation.
+
+For example:
+
+```text
+                 Traffic
+                    │
+                    ▼
+             Sensitivity Analysis
+                    │
+          ┌─────────┼─────────┐
+          │         │         │
+         HIGH     MEDIUM      LOW
+          │         │         │
+          ▼         ▼         ▼
+       Stronger   Balanced   Lower-cost
+       protection protection protection
+          │         │         │
+          └─────────┼─────────┘
+                    │
+             Resource Monitor
+                    │
+                    ▼
+             Policy Decision
+                    │
+                    ▼
+             Encryption Engine
+```
+
+The goal is not simply to maximize encryption strength.
+
+Instead, APQCrypt investigates:
+
+> **How can security mechanisms adapt to traffic sensitivity while remaining aware of available computational resources?**
+
+---
+
+## Example System Output
+
+In a representative system execution, the dashboard can report information such as:
+
+
+```text
+Packets:       1,000
+Flows:         75
+
+Sensitivity:
+HIGH:          324
+MEDIUM:        670
+LOW:             6
+
+Encryption:
+AES-256-GCM:   324 packets
+ChaCha20:      676 packets
+
+PQC:
+ML-KEM Handshakes: 8
+
+Resource Status:
+CONSTRAINED
+```
+
+The exact values depend on the captured traffic and system conditions and are therefore not fixed project constants.
+
+---
+
+## Processing Pipeline
+
+The complete workflow is:
+
+```text
+1. Capture network traffic
+          ↓
+2. Extract packet/flow features
+          ↓
+3. Classify traffic sensitivity
+          ↓
+4. Monitor system resources
+          ↓
+5. Generate encryption policy
+          ↓
+6. Establish cryptographic keys
+          ↓
+7. Apply selected encryption
+          ↓
+8. Record results and timings
+          ↓
+9. Display results through dashboard
+```
+
+---
+
+## Technology Stack
+
+### Programming
+
+* Python
+
+### Web / Dashboard
+
+* Flask
+* HTML
+* JavaScript
+
+### Network Analysis
+
+* Scapy
+* TShark
+* PCAP/PCAPNG traffic captures
+* Mininet
+
+### Cryptography
+
+* AES-256-GCM
+* ChaCha20
+* ML-KEM / Post-Quantum Cryptography
+
+### Machine Learning
+
+* Python-based trained sensitivity classification model
+* Serialized model using `.pkl`
+
+### Development Environment
+
+* Ubuntu Linux
+* VMware
+* Git / GitHub
+
+---
+
+## Project Structure
+
+```text
+APQCrypt/
+│
+├── app.py
+├── main_controller.py
+│
+├── packet_capture.py
+├── feature_extraction.py
+├── sensitivity_engine.py
+├── policy_engine.py
+├── encryption_engine.py
+├── status_manager.py
+│
+├── sensitivity_model.pkl
+├── requirements.txt
+│
+├── stress_test.py
+├── verify_encryption.py
+│
+├── data/
+│   └── policy.csv
+│
+├── templates/
+│   └── index.html
+│
+├── FILE_MANIFEST.md
+├── QUICK_REFERENCE.md
+├── SETUP_AND_TROUBLESHOOTING.md
+├── ISSUES_FOUND_AND_FIXED.md
+└── .gitignore
+```
+
+Runtime-generated traffic captures, results, status files, and Python cache files are excluded from version control.
+
+---
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone git@github.com:merledu/APQCrypt.git
+cd APQCrypt
+```
+
+HTTPS cloning can also be used if SSH is not configured.
+
+### 2. Install dependencies
+
+It is recommended to use a Python virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Then:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Verify the project environment
+
+Review:
+
+```text
+QUICK_REFERENCE.md
+SETUP_AND_TROUBLESHOOTING.md
+```
+
+for environment-specific configuration and troubleshooting information.
+
+---
+
+## Running the System
+
+The project includes a Flask-based dashboard and controller architecture.
+
+The primary application components are:
+
+```text
+app.py
+main_controller.py
+```
+
+Before running the complete pipeline, ensure the required network-analysis tools and the configured Linux/Mininet environment are available.
+
+Example:
+
+```bash
+python3 app.py
+```
+
+The exact execution workflow may depend on the configured test environment.
+
+---
+
+## Testing and Verification
+
+The repository includes supporting scripts for testing and verification:
+
+```text
+stress_test.py
+verify_encryption.py
+```
+
+These are intended to help evaluate system behavior and verify encryption-related functionality.
+
+---
+
+## Performance Monitoring
+
+APQCrypt records execution timing for different stages of the processing pipeline.
+
+The monitored stages include:
+
+* Packet Capture
+* Feature Extraction
+* Sensitivity Analysis
+* Policy Engine
+* Encryption Engine
+* Total Pipeline Execution
+
+This allows future evaluation of the system using metrics such as:
+
+* Processing latency
+* Encryption overhead
+* CPU utilization
+* Memory utilization
+* Throughput
+* Post-quantum handshake cost
+* Security-policy decisions
+
+---
+
+## Research Contribution
+
+APQCrypt explores the combination of several security concepts within one adaptive architecture:
+
+### 1. Post-Quantum Security
+
+Investigates the integration of ML-KEM-based key establishment into a network security workflow.
+
+### 2. Traffic Sensitivity
+
+Uses traffic characteristics to classify network activity according to security sensitivity.
+
+### 3. Adaptive Encryption
+
+Moves away from a purely fixed encryption strategy by allowing encryption decisions to depend on traffic sensitivity and system conditions.
+
+### 4. Resource Awareness
+
+Considers CPU and memory conditions when making security-policy decisions.
+
+### 5. Observable Security Decisions
+
+Provides dashboard-level visibility into why different traffic receives different security treatment.
+
+---
+
+## Current Development Status
+
+APQCrypt is an **academic research prototype / Final Year Project**.
+
+The current implementation provides the core pipeline:
+
+```text
+Network Traffic
+      ↓
+Packet Capture
+      ↓
+Feature Extraction
+      ↓
+Sensitivity Classification
+      ↓
+Policy Decision
+      ↓
+Adaptive Encryption
+      ↓
+Dashboard
+```
+
+Further work can extend the prototype toward larger-scale testing, stronger benchmarking, improved adaptive policies, and deployment-oriented evaluation.
+
+---
+
+## Future Improvements
+
+Potential future development includes:
+
+* Security-versus-performance benchmarking
+* Adaptive sensitivity thresholds
+* More advanced traffic classification
+* Additional post-quantum algorithms
+* Expanded cryptographic policy options
+* Automated performance comparison between adaptive and fixed encryption
+* Flow-level rather than packet-level analysis improvements
+* Security decision explainability
+* Throughput and latency benchmarking
+* Larger and more diverse network traffic datasets
+* Containerized deployment
+* More extensive automated testing
+
+---
+
+## Why This Project Matters
+
+The transition to post-quantum cryptography introduces new computational and architectural considerations for secure communication systems.
+
+At the same time, network environments contain traffic with different levels of sensitivity and operate under changing resource constraints.
+
+APQCrypt explores these two challenges together:
+
+```text
+Post-Quantum Security
+          +
+Traffic Awareness
+          +
+Resource Awareness
+          ↓
+Adaptive Security Decisions
+```
+
+The project therefore serves as a practical exploration of **post-quantum cybersecurity and adaptive network protection**.
+
+---
+
+## Skills Demonstrated
+
+This project demonstrates practical experience with:
+
+* Cybersecurity
+* Network security
+* Post-quantum cryptography
+* Cryptographic algorithms
+* Network traffic analysis
+* Packet capture
+* Machine learning
+* Security policy design
+* Python development
+* Flask
+* Linux
+* Mininet
+* Scapy
+* TShark
+* Git/GitHub
+* System resource monitoring
+* Performance analysis
+* Security-oriented software architecture
+
+---
+
+## Project Team
+
+**Final Year Project — APQCrypt**
+
+Developed as an academic cybersecurity research and development project.
+
+---
+
+## License
+
+See the repository `LICENSE` file for licensing information.
+
