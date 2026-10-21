@@ -1,0 +1,7 @@
+flask
+scapy
+cryptography
+scikit-learn
+numpy
+pandas
+joblib

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Capture &amp; Features{% endblock %}
+{% block content %}
+<div class="page-title">1 · Capture and Features</div>
+<div class="page-sub">We create a small test network, record the traffic that flows through it, and turn every recorded packet into a row of facts.</div>
+
+<div class="explain">
+  <b>In simple words:</b> a <b>packet</b> is one small piece of data on the network. We record about 1000 of them, then write down for each one:
+  who sent it, who received it, which door (port), how big it was, the TCP flags, a conversation ID, and the <b>first bytes of its data</b>.
+  Those first bytes let the next stage "peek" at plain-text clues like a website name. <span class="muted">Nothing is decrypted: we only read what the network protocols send in the open.</span>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="label">Packets captured</div>
+    <div class="big-number" id="totalPackets">—</div><div class="sub" id="captureFile">No capture yet</div></div>
+  <div class="card"><div class="label">Conversations (flows)</div>
+    <div class="big-number" id="flowCount">—</div><div class="sub">packets grouped by who talks to whom</div></div>
+  <div class="card"><div class="label">Packets carrying data</div>
+    <div class="big-number" id="payloadCount">—</div><div class="sub">the rest are handshakes, pings, ARP</div></div>
+  <div class="card"><div class="label">Protocol mix</div><div id="protocolBars"><div class="empty-note">Run the pipeline to see the breakdown</div></div></div>
+  <div class="card"><div class="label">Capture + extraction time (s)</div><div class="timing-list" id="timingList"><div class="empty-note">No timing data yet</div></div></div>
+</div>
+
+<div class="panel">
+  <div class="table-head">
+    <div class="label" style="margin:0">Extracted features · first 50 rows</div>
+    <div class="row-actions" style="margin:0">
+      <span class="mutedtxt mono" id="tableRowCount"></span>
+      <a class="ghost-btn" href="/download/packets" download>⬇ traffic.pcapng</a>
+      <a class="ghost-btn" href="/download/features" download>⬇ features.csv</a>
+    </div>
+  </div>
+  <div class="table-scroll"><table id="featTable"></table></div>
+</div>
+{% endblock %}
