@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-title">8 · Configuration interface</div>
+<div class="page-sub">Change how APQCrypt behaves without touching code. Changes apply to the next run and are saved with that run.</div>
+
+<div class="explain">
+  <b>How it works:</b> pick a <b>preset</b> or edit the values, then press <b>Save</b>. Every value is checked first. The most important safety rule: <b>HIGH must stay quantum-safe</b> unless you tick "Allow unsafe settings" for an experiment, and only tamper-detecting locks are allowed.
+  <span class="muted">After saving, press Start (or re-run from the Debug page) and watch the results change.</span>
+</div>
+
+<div class="panel">
+  <div class="label">Presets and file</div>
+  <div class="row-actions" id="presetBar"></div>
+  <div class="row-actions">
+    <button class="btn" id="cfgSave" style="padding:10px 24px;font-size:13px">Save settings</button>
+    <button class="ghost-btn" id="cfgDiscard">Discard changes</button>
+    <button class="ghost-btn" id="cfgReset">Reset to defaults</button>
+    <a class="ghost-btn" href="/api/config/export">⬇ Export (.json)</a>
+    <label class="ghost-btn" style="cursor:pointer">⬆ Import (.json)<input type="file" id="cfgImport" accept=".json" style="display:none"></label>
+    <span class="mono" id="cfgState"></span>
+  </div>
+  <div id="cfgErrors"></div>
+</div>
+
+<div id="settingsForm"></div>
+{% endblock %}
