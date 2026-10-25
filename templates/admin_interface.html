@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Interface{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Interface</h1>
+  <p class="page-sub">The capture setup, the Mininet test network, and the network interfaces of this machine.</p>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="label">Capture setup</div>
+    <dl class="kv" id="capKv"></dl>
+  </div>
+  <div class="panel">
+    <div class="label">Test network</div>
+    <p id="netMsg" class="run-msg" style="margin-bottom:14px">&ndash;</p>
+    <div class="row-actions" style="margin:0">
+      <button class="btn navy" id="prepBtn" type="button">Prepare test network</button>
+      <button class="btn ghost" id="stopBtn" type="button">Stop and clean up</button>
+    </div>
+    <p class="hint" style="margin-top:12px">Preparing removes stale Mininet switches and namespaces so the next capture starts clean. The capture itself builds the topology (h1, s1, h2) when the pipeline runs.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-head"><div class="label">Connections</div>
+    <span class="mutedtxt">REST API base address: <span class="mono" id="apiBase">&ndash;</span></span></div>
+  <div class="table-scroll"><table id="connTable"></table></div>
+  <p class="hint" style="margin-top:10px">The packet source decides where traffic comes from. The cryptography provider decides whether ML-KEM is real (liboqs) or simulated. The simulated provider is not quantum-safe and is for development only.</p>
+</div>
+
+<div class="panel">
+  <div class="label">Required tools</div>
+  <div class="checks" id="toolChecks"></div>
+</div>
+
+<div class="panel">
+  <div class="label">Network interfaces on this machine</div>
+  <div class="table-scroll"><table id="nicTable"></table></div>
+</div>
+{% endblock %}

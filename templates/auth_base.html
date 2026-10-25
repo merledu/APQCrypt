@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{% endblock %} | APQCrypt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%23EEAC19'/%3E%3Crect x='10' y='10' width='16' height='16' rx='2' fill='%231B2050'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-main">
+    <section class="auth-aside">
+      <div class="brand">
+        <svg width="46" height="46" viewBox="0 0 36 36" aria-hidden="true">
+          <rect width="36" height="36" rx="8" fill="#EEAC19"/>
+          <g stroke="#1B2050" stroke-width="2" stroke-linecap="round"><path d="M14 5v5M22 5v5M14 26v5M22 26v5M5 14h5M5 22h5M26 14h5M26 22h5"/></g>
+          <rect x="10" y="10" width="16" height="16" rx="2" fill="#1B2050"/><rect x="14" y="14" width="8" height="8" rx="1" fill="#EEAC19"/>
+        </svg>
+        <span class="brand-name">APQCrypt</span>
+      </div>
+      <h1>Adaptive post-quantum and classical cryptography for RISC-V</h1>
+      <p>Capture traffic, score its sensitivity, check the system condition, and apply the encryption policy that fits, from one dashboard.</p>
+    </section>
+    <section class="auth-form-wrap">
+      <div class="auth-card">{% block card %}{% endblock %}</div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "pipeline.html" %}
+{% block title %}Capture{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="page-title">Capture and feature extraction</h1>
+  <p class="page-sub">Traffic recorded from the Mininet test network, and the per-packet features extracted from it.</p>
+</div>
+
+<details class="method">
+  <summary>How this stage works</summary>
+  <div class="method-body">
+    <p>A two-host Mininet topology (h1, s1, h2) generates ICMP, UDP, DNS, HTTP, HTTPS and SSH traffic. tshark records it on the switch interface into <span class="mono">traffic.pcapng</span>.</p>
+    <p>Scapy then reads every packet and extracts addresses, ports, protocol, TTL, TCP flags, window size, packet size, a flow identifier and the first 128 bytes of the payload as hex. Those bytes are used only to read protocol fields that are sent in clear text, such as the TLS server name, the DNS query name and the SSH banner. Nothing is decrypted.</p>
+  </div>
+</details>
+
+<div class="grid">
+  <div class="card"><div class="label">Packets captured</div>
+    <div class="big-number" id="totalPackets">&ndash;</div><div class="sub" id="captureFile">No capture yet</div></div>
+  <div class="card"><div class="label">Flows</div>
+    <div class="big-number" id="flowCount">&ndash;</div><div class="sub">Packets grouped by source, destination and protocol</div></div>
+  <div class="card"><div class="label">Packets with payload</div>
+    <div class="big-number" id="payloadCount">&ndash;</div><div class="sub">The rest are handshakes, pings and ARP</div></div>
+  <div class="card"><div class="label">Protocol mix</div><div id="protocolBars"><div class="empty-note">Run the pipeline to see the breakdown.</div></div></div>
+  <div class="card"><div class="label">Stage time</div><div class="timing-list" id="timingList"><div class="empty-note">No timing data yet.</div></div></div>
+</div>
+
+<div class="panel">
+  <div class="table-head">
+    <div class="label">Extracted features</div>
+    <div class="row-actions" style="margin:0">
+      <span class="mutedtxt" id="tableRowCount"></span>
+      <a class="ghost-btn" href="/download/packets" download>Download traffic.pcapng</a>
+      <a class="ghost-btn" href="/download/features" download>Download features.csv</a>
+    </div>
+  </div>
+  <div class="table-scroll"><table id="featTable"></table></div>
+</div>
+{% endblock %}

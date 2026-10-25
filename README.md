@@ -631,3 +631,14 @@ Developed as an academic cybersecurity research and development project.
 
 See the repository `LICENSE` file for licensing information.
 
+
+## Accounts and roles
+
+On the first run, open the dashboard and create the super admin account. After that every page needs a sign-in.
+
+| Role | Can do |
+|---|---|
+| User | Run the pipeline, open all five stages, download and save results, view their own saved results |
+| Super admin | Everything a user can, plus the Interface bar: Debug, Interface, Settings and Users; sees all saved results |
+
+Accounts are stored in `data/users.json` with salted password hashes. To reset everything, stop the server and delete `data/users.json`; the setup page appears again.

@@ -1,0 +1,35 @@
+{% extends "pipeline.html" %}
+{% block title %}Encryption{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="page-title">Encryption</h1>
+  <p class="page-sub">One key exchange per flow, then every packet of that flow is encrypted with the selected cipher.</p>
+</div>
+
+<details class="method">
+  <summary>How encryption is applied</summary>
+  <div class="method-body">
+    <p><b>Key exchange</b> runs once per flow: X25519, or X25519 combined with ML-KEM (hybrid) for sensitive traffic. <b>Key derivation</b> mixes the shared secrets with HKDF. <b>Encryption</b> then protects each packet payload with AES-GCM or ChaCha20-Poly1305.</p>
+    <p><b>Self-checks.</b> A sample of packets is decrypted to confirm correctness, and one bit is flipped to confirm tampering is detected.</p>
+    <p><b>Prototype limitation.</b> Both ends of each key exchange run inside the same process.</p>
+  </div>
+</details>
+
+<div class="grid">
+  <div class="card"><div class="label">Encryption summary</div><div id="encryptionSummary"><div class="empty-note">Run the pipeline first.</div></div></div>
+  <div class="card"><div class="label">Key exchange used</div><div id="kexBars"><div class="empty-note">No data yet.</div></div></div>
+  <div class="card"><div class="label">Selected algorithms</div><div id="algorithmBars"><div class="empty-note">No data yet.</div></div></div>
+  <div class="card"><div class="label">HIGH flows with quantum-safe key exchange</div>
+    <div class="big-number" id="highCov">&ndash;</div><div class="sub" id="highCovNote">Expected to be 100% in adaptive mode</div></div>
+</div>
+
+<div class="panel">
+  <div class="table-head">
+    <div class="label">Flows</div>
+    <div class="row-actions" style="margin:0"><span class="mutedtxt" id="flowCountTxt"></span>
+      <a class="ghost-btn" href="/download/encrypted" download>Download encrypted_results.csv</a>
+      <a class="ghost-btn" href="/download/policy" download>Download policy.csv</a></div>
+  </div>
+  <div class="table-scroll"><table id="flowTable"></table></div>
+</div>
+{% endblock %}

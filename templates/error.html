@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:48px;max-width:560px">
+  <h1 class="page-title">{{ title }}</h1>
+  <p class="page-sub">{{ text }}</p>
+  <p style="margin-top:18px"><a class="btn navy" href="{{ url_for('page_capture') }}">Back to the pipeline</a></p>
+</div>
+{% endblock %}

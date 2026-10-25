@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Saved results{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Saved results</h1>
+  <p class="page-sub" id="savedSub">Results you saved from a finished pipeline run. Open one to review or download its files.</p>
+</div>
+<div class="panel">
+  <div class="table-scroll" style="max-height:none"><table id="savedTable"></table></div>
+</div>
+{% endblock %}

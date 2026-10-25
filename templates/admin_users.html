@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Users</h1>
+  <p class="page-sub">Create accounts and choose what each person can do. Users can run the pipeline, open every stage, and save and download results. Super admins also get Debug, Interface, Settings and Users.</p>
+</div>
+
+<div class="panel">
+  <div class="label">Add a user</div>
+  <form class="inline-form" id="newUserForm" autocomplete="off">
+    <div class="field"><label for="nuName">Full name</label><input class="ctl" id="nuName" maxlength="60"></div>
+    <div class="field"><label for="nuUser">Username</label><input class="ctl" id="nuUser" required pattern="[A-Za-z0-9_.\-]{3,32}" autocomplete="off"></div>
+    <div class="field"><label for="nuPass">Password</label><input class="ctl" id="nuPass" type="password" required minlength="8" autocomplete="new-password"></div>
+    <div class="field"><label for="nuRole">Role</label>
+      <select class="ctl" id="nuRole"><option value="user">User</option><option value="super_admin">Super admin</option></select></div>
+    <button class="btn navy" type="submit">Add user</button>
+  </form>
+  <p class="hint" style="margin-top:10px">Usernames: 3 to 32 characters (letters, numbers, dot, dash, underscore). Passwords: at least 8 characters.</p>
+</div>
+
+<div class="panel">
+  <div class="label">Accounts</div>
+  <div class="table-scroll" style="max-height:none"><table id="userTable"></table></div>
+</div>
+
+<dialog id="pwDlg">
+  <form method="dialog" id="pwForm">
+    <h3 id="pwTitle">Reset password</h3>
+    <div class="field"><label for="pwNew">New password</label>
+      <input class="ctl" id="pwNew" type="password" minlength="8" required autocomplete="new-password">
+      <span class="hint">At least 8 characters. Share it with the user directly.</span></div>
+    <div class="dlg-actions">
+      <button class="btn ghost" type="button" id="pwCancel">Cancel</button>
+      <button class="btn navy" type="submit">Set password</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

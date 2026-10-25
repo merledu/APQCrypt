@@ -1,0 +1,39 @@
+{% extends "pipeline.html" %}
+{% block title %}Sensitivity{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="page-title">Sensitivity scoring</h1>
+  <p class="page-sub">Two independent assessments of each flow are combined into one sensitivity level.</p>
+</div>
+
+<details class="method">
+  <summary>How the score is calculated</summary>
+  <div class="method-body">
+    <p><b>Confidentiality score (rules).</b> What kind of data is this? The destination port and protocol give a base score (for example SSH or a banking site scores high, clock synchronisation scores low). Clear-text protocol fields refine it: the TLS server name, the DNS query type, the HTTP method and Authorization header, and the SSH banner.</p>
+    <p><b>Behaviour risk (Random Forest).</b> Does the flow behave like an attack? A Random Forest trained on CIC-IDS2017 flow features returns LOW, MEDIUM or HIGH.</p>
+    <div class="formula">
+      Final score = max(confidentiality score, risk score)<br>
+      0.70 or above: <span class="tier-badge tier-HIGH">HIGH</span> &nbsp; 0.40 or above: <span class="tier-badge tier-MEDIUM">MEDIUM</span> &nbsp; below 0.40: <span class="tier-badge tier-LOW">LOW</span>
+    </div>
+    <p>The maximum is used so that a strong signal is never diluted by averaging. One decision is made per flow, from the highest score in its first 10 packets. When the classifier is uncertain, protection is raised, never lowered.</p>
+  </div>
+</details>
+
+<div class="grid">
+  <div class="card"><div class="label">Final sensitivity (packets)</div><div id="sensitivityBars"><div class="empty-note">Run the pipeline first.</div></div></div>
+  <div class="card"><div class="label">Behaviour risk (packets)</div><div id="riskBars"><div class="empty-note">Run the pipeline first.</div></div></div>
+  <div class="card"><div class="label">Payload signals found</div>
+    <div class="big-number" id="dpiFound">&ndash;</div><div class="sub">Packets where a clear-text field set or confirmed the score</div></div>
+  <div class="card"><div class="label">Stage time</div><div class="timing-list" id="timingList"><div class="empty-note">No timing data yet.</div></div></div>
+</div>
+
+<div class="panel">
+  <div class="table-head">
+    <div class="label">Scoring detail</div>
+    <div class="row-actions" style="margin:0"><span class="mutedtxt" id="tableRowCount"></span>
+      <a class="ghost-btn" href="/download/results" download>Download results.csv</a></div>
+  </div>
+  <div class="table-scroll"><table id="scoreTable"></table></div>
+  <div class="sub">The Reason column gives the basis of each decision.</div>
+</div>
+{% endblock %}

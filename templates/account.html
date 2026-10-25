@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Account</h1>
+  <p class="page-sub">Signed in as {{ user.username }} ({{ user.role_label }}).</p>
+</div>
+<div class="panel form-card">
+  <div class="label">Change password</div>
+  {% if error %}<div class="form-error" role="alert">{{ error }}</div>{% endif %}
+  {% if msg %}<div class="form-ok" role="status">{{ msg }}</div>{% endif %}
+  <form method="post" action="{{ url_for('account') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="field"><label for="current_password">Current password</label>
+      <input class="ctl" id="current_password" name="current_password" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="new_password">New password</label>
+      <input class="ctl" id="new_password" name="new_password" type="password" autocomplete="new-password" required minlength="{{ min_password }}">
+      <span class="hint">At least {{ min_password }} characters.</span></div>
+    <div class="field"><label for="confirm">Confirm new password</label>
+      <input class="ctl" id="confirm" name="confirm" type="password" autocomplete="new-password" required minlength="{{ min_password }}"></div>
+    <button class="btn navy" type="submit">Update password</button>
+  </form>
+</div>
+{% endblock %}

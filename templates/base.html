@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>{% block title %}{% endblock %} | APQCrypt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%23EEAC19'/%3E%3Crect x='10' y='10' width='16' height='16' rx='2' fill='%231B2050'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-page="{{ page }}" data-role="{{ user.role if user else '' }}" data-default-mode="{{ settings.default_mode }}">
+
+{% macro mark(size=38) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 36 36" aria-hidden="true">
+  <rect width="36" height="36" rx="8" fill="#EEAC19"/>
+  <g stroke="#1B2050" stroke-width="2" stroke-linecap="round"><path d="M14 5v5M22 5v5M14 26v5M22 26v5M5 14h5M5 22h5M26 14h5M26 22h5"/></g>
+  <rect x="10" y="10" width="16" height="16" rx="2" fill="#1B2050"/>
+  <rect x="14" y="14" width="8" height="8" rx="1" fill="#EEAC19"/>
+</svg>
+{% endmacro %}
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('page_capture') }}" aria-label="APQCrypt home">
+      {{ mark() }}
+      <span>
+        <span class="brand-name">APQCrypt</span><br>
+        <span class="brand-sub">Adaptive post-quantum cryptography for RISC-V</span>
+      </span>
+    </a>
+    <div class="top-right">
+      <a class="top-link {{ 'active' if page in ['capture','sensitivity','resources','encryption','compare'] else '' }}" href="{{ url_for('page_capture') }}">Pipeline</a>
+      <a class="top-link {{ 'active' if page in ['saved','saved_run'] else '' }}" href="{{ url_for('page_saved') }}">Saved results</a>
+      <a class="top-link {{ 'active' if page == 'account' else '' }}" href="{{ url_for('account') }}">Account</a>
+      <div class="who">
+        <div class="who-text">
+          <div class="who-name">{{ user.display_name }}</div>
+          <div class="who-role {{ 'admin' if user.role == 'super_admin' else '' }}">{{ user.role_label }}</div>
+        </div>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="signout" type="submit">Sign out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% if user.role == 'super_admin' %}
+<nav class="ifbar" aria-label="Administration">
+  <div class="wrap">
+    <span class="ifbar-title">Administration</span>
+    {% for key, label, url in admin_nav %}
+      <a href="{{ url }}" class="{{ 'active' if key == page else '' }}" {% if key == page %}aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </div>
+</nav>
+{% endif %}
+
+<main class="wrap">
+  {% block stages %}{% endblock %}
+  {% block content %}{% endblock %}
+  <footer class="foot">APQCrypt: Adaptive Post-Quantum and Classical Cryptography Framework</footer>
+</main>
+
+<div id="toastHost" aria-live="polite"></div>
+<script src="{{ url_for('static', filename='chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

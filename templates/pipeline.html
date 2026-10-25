@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block stages %}
+<nav class="stagebar" aria-label="Pipeline stages">
+  {% for key, label, url, desc in nav %}
+  <a class="step {{ 'current' if key == page else '' }}" id="step-{{ key }}" href="{{ url }}" {% if key == page %}aria-current="page"{% endif %}>
+    <span class="node" id="node-{{ key }}">{{ loop.index }}</span>
+    <span class="step-text">
+      <span class="step-name">{{ label }}</span>
+      <span class="step-state" id="state-{{ key }}">Waiting</span>
+    </span>
+  </a>
+  {% endfor %}
+</nav>
+
+<section class="runbar" aria-label="Run controls">
+  <button class="btn" id="startBtn" type="button">Start pipeline</button>
+  <select class="ctl" id="modeSel" aria-label="Encryption policy">
+    <option value="adaptive" {{ 'selected' if settings.default_mode == 'adaptive' }}>Adaptive (APQCrypt)</option>
+    <option value="static_aes" {{ 'selected' if settings.default_mode == 'static_aes' }}>Static AES-256</option>
+    <option value="static_pqc" {{ 'selected' if settings.default_mode == 'static_pqc' }}>All quantum-safe</option>
+  </select>
+  <label class="check-ctl"><input type="checkbox" id="reuseChk"> Reuse last capture</label>
+  <div class="grow">
+    <div class="run-msg" id="statusLine">Ready. Start the pipeline to capture and analyse traffic.</div>
+    <div class="progress" aria-hidden="true"><i id="progressFill"></i></div>
+  </div>
+  <button class="btn ghost" id="saveBtn" type="button" disabled>Save result</button>
+</section>
+
+<dialog id="saveDlg">
+  <form method="dialog" id="saveForm">
+    <h3>Save this result</h3>
+    <div class="field">
+      <label for="saveName">Name</label>
+      <input class="ctl" id="saveName" maxlength="80" autocomplete="off" placeholder="For example: Adaptive run, busy system">
+      <span class="hint">Saved results keep every output file of this run, so you can reopen or download them later.</span>
+    </div>
+    <div class="dlg-actions">
+      <button class="btn ghost" value="cancel" type="button" id="saveCancel">Cancel</button>
+      <button class="btn navy" type="submit" id="saveConfirm">Save</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

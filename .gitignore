@@ -1,0 +1,41 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Runtime/generated data
+data/traffic.pcapng
+data/features.csv
+data/results.csv
+data/encrypted_results.csv
+data/status.json
+data/timings.json
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# OS/editor files
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Accounts, settings and saved results (never commit these)
+data/users.json
+data/secret.key
+data/settings.json
+data/audit.log
+data/saved/
+
+# More private/generated files
+data/api_key.txt
+data/comparison/
+data/bench/
+data/debug_events.jsonl
+data/policy.csv
+data/encryption_checks.json
+data/benchmark_runs.csv
+data/benchmark_summary.csv
+data/benchmark_summary.json

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ run.name }}{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <p class="hint"><a href="{{ url_for('page_saved') }}">Saved results</a></p>
+  <h1 class="page-title" id="runTitle">{{ run.name }}</h1>
+  <p class="page-sub">Saved by {{ run.owner }}. This is a snapshot; later runs do not change it.</p>
+</div>
+
+<div class="grid" id="runSummary" data-id="{{ run.id }}"></div>
+
+<div class="panel">
+  <div class="label">Files</div>
+  <div class="row-actions" id="runFiles"></div>
+</div>
+
+<div class="panel">
+  <div class="table-head">
+    <div class="label">Preview</div>
+    <div class="row-actions" style="margin:0">
+      <select class="ctl" id="previewSel" aria-label="File to preview"></select>
+      <span class="mutedtxt" id="previewCount"></span>
+    </div>
+  </div>
+  <div class="table-scroll"><table id="previewTable"></table></div>
+</div>
+{% endblock %}

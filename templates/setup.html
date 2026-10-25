@@ -1,0 +1,21 @@
+{% extends "auth_base.html" %}
+{% block title %}Create the super admin{% endblock %}
+{% block card %}
+<h2>Create the super admin</h2>
+<p class="page-sub">This account manages users and has access to Debug, Interface and Settings. It is created once.</p>
+{% if error %}<div class="form-error" role="alert">{{ error }}</div>{% endif %}
+<form method="post" action="{{ url_for('setup') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="field"><label for="display_name">Full name</label>
+    <input class="ctl" id="display_name" name="display_name" autocomplete="name" maxlength="60"></div>
+  <div class="field"><label for="username">Username</label>
+    <input class="ctl" id="username" name="username" autocomplete="username" required autofocus pattern="[A-Za-z0-9_.\-]{3,32}">
+    <span class="hint">3 to 32 characters: letters, numbers, dot, dash or underscore.</span></div>
+  <div class="field"><label for="password">Password</label>
+    <input class="ctl" id="password" name="password" type="password" autocomplete="new-password" required minlength="{{ min_password }}">
+    <span class="hint">At least {{ min_password }} characters.</span></div>
+  <div class="field"><label for="confirm">Confirm password</label>
+    <input class="ctl" id="confirm" name="confirm" type="password" autocomplete="new-password" required minlength="{{ min_password }}"></div>
+  <button class="btn navy" type="submit" style="width:100%;justify-content:center">Create account</button>
+</form>
+{% endblock %}

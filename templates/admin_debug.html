@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Debug{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Debug</h1>
+  <p class="page-sub">Environment checks, pipeline state, output files and the activity log.</p>
+</div>
+
+<div class="panel">
+  <div class="table-head"><div class="label">Environment</div><button class="ghost-btn" id="refreshBtn" type="button">Refresh</button></div>
+  <div class="checks" id="envChecks"></div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="label">Pipeline</div>
+    <dl class="kv" id="pipeKv"></dl>
+    <div class="label" style="margin:18px 0 8px">Raw status</div>
+    <pre class="json" id="rawStatus">&ndash;</pre>
+  </div>
+  <div class="panel">
+    <div class="label">Stage times, last run</div>
+    <div class="timing-list" id="timingList"><div class="empty-note">No timing data yet.</div></div>
+    <div class="label" style="margin:18px 0 8px">Comparison</div>
+    <dl class="kv" id="benchKv"></dl>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-head"><div class="label">Pipeline stages, last run</div>
+    <a class="ghost-btn" href="/api/debug/bundle" download>Download debug bundle (.zip)</a></div>
+  <div class="table-scroll"><table id="stageTable"></table></div>
+</div>
+
+<div class="panel">
+  <div class="table-head"><div class="label">Engine events</div><span class="mutedtxt">Newest first</span></div>
+  <div class="table-scroll"><table id="eventTable"></table></div>
+</div>
+
+<div class="panel">
+  <div class="label">Output files</div>
+  <div class="table-scroll"><table id="fileTable"></table></div>
+</div>
+
+<div class="panel">
+  <div class="table-head"><div class="label">Activity log</div><span class="mutedtxt">Latest 150 events</span></div>
+  <div class="table-scroll"><table id="logTable"></table></div>
+</div>
+{% endblock %}

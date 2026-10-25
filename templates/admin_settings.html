@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-head" style="margin-top:28px">
+  <h1 class="page-title">Settings</h1>
+  <p class="page-sub">Defaults that apply to every user. Changes take effect on the next run or sign-in.</p>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="label">Pipeline</div>
+    <div class="field">
+      <label for="setMode">Default encryption policy</label>
+      <select class="ctl" id="setMode">
+        <option value="adaptive">Adaptive (APQCrypt)</option>
+        <option value="static_aes">Static AES-256</option>
+        <option value="static_pqc">All quantum-safe</option>
+      </select>
+      <span class="hint">Preselected in the run bar. Users can still choose another policy per run.</span>
+    </div>
+    <div class="field">
+      <label for="setLoad">System load source</label>
+      <select class="ctl" id="setLoad">
+        <option value="real">Measured (real CPU and memory)</option>
+        <option value="AVAILABLE">Simulate: system available</option>
+        <option value="CONSTRAINED">Simulate: system constrained</option>
+      </select>
+      <span class="hint">Use a simulated condition to demonstrate both columns of the decision table. It applies to every pipeline run and comparison.</span>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="label">Security</div>
+    <div class="field">
+      <label for="setTimeout">Sign-in lifetime (minutes)</label>
+      <input class="ctl" id="setTimeout" type="number" min="15" max="1440" step="5">
+      <span class="hint">Between 15 and 1440. After this time a user has to sign in again.</span>
+    </div>
+    <div class="label" style="margin-top:22px">Resource limits (read only)</div>
+    <dl class="kv" id="limitsKv"></dl>
+    <p class="hint" style="margin-top:10px">A system at or above either limit is Constrained. The limits are set in policy_engine.py.</p>
+  </div>
+</div>
+
+<div class="row-actions">
+  <button class="btn navy" id="saveSettings" type="button">Save settings</button>
+  <span class="mutedtxt" id="settingsMsg"></span>
+</div>
+{% endblock %}

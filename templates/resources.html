@@ -1,0 +1,49 @@
+{% extends "pipeline.html" %}
+{% block title %}System condition{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="page-title">System condition and policy</h1>
+  <p class="page-sub">Live CPU and memory readings, and the decision table that maps sensitivity and system condition to an algorithm.</p>
+</div>
+
+<details class="method">
+  <summary>How the policy is chosen</summary>
+  <div class="method-body">
+    <p>Before encrypting, the policy engine averages a short series of CPU readings and reads memory use. If either is at or above its limit, the system is <b>Constrained</b>; otherwise it is <b>Available</b>. A constrained system gets cheaper algorithms.</p>
+    <p>HIGH sensitivity flows always keep the hybrid quantum-safe key exchange. Only the bulk cipher and the MEDIUM key exchange adapt to load. Every cipher is authenticated (AES-GCM or ChaCha20-Poly1305), so tampering is detected.</p>
+    <p>The CPU and memory limits are design parameters and should be calibrated on the target RISC-V board.</p>
+  </div>
+</details>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="label">Live reading</div>
+    <div class="gauge"><div class="gauge-top"><span>CPU</span><b id="cpuVal">&ndash;</b></div>
+      <div class="gauge-track"><div class="gauge-fill" id="cpuFill" style="width:0%"></div><div class="gauge-limit" id="cpuLimit" style="left:50%"></div></div></div>
+    <div class="gauge"><div class="gauge-top"><span>Memory</span><b id="memVal">&ndash;</b></div>
+      <div class="gauge-track"><div class="gauge-fill" id="memFill" style="width:0%"></div><div class="gauge-limit" id="memLimit" style="left:70%"></div></div></div>
+    <div style="margin-top:14px"><span class="mutedtxt">Current condition: </span><span class="state-chip" id="stateChip">&ndash;</span></div>
+    <div class="sub" id="limitNote">The dark marker on each bar is its limit.</div>
+  </div>
+  <div class="panel">
+    <div class="label">Condition used in the last run</div>
+    <div id="lastDecision"><div class="empty-note">No run yet.</div></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="label">History, last 60 seconds</div>
+  <div class="chart-box"><canvas id="histChart"></canvas></div>
+</div>
+
+<div class="panel">
+  <div class="label">Decision table: sensitivity and system condition to key exchange and cipher</div>
+  <div class="table-scroll"><table id="matrixTable"></table></div>
+  <div class="sub">The highlighted column is the current system condition. X25519 is the classical key exchange; ML-KEM is the post-quantum key exchange, used together with X25519 in hybrid mode.</div>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="label">Policy decisions, last run</div><div id="policyBars"><div class="empty-note">No run yet.</div></div></div>
+  <div class="card"><div class="label">Selected algorithms, last run</div><div id="algorithmBars"><div class="empty-note">No run yet.</div></div></div>
+</div>
+{% endblock %}

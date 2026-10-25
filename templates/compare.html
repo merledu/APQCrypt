@@ -1,0 +1,255 @@
+{% extends "pipeline.html" %}
+{% block title %}Comparison{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1 class="page-title">Comparison: Normal vs Adaptive</h1>
+  <p class="page-sub">
+    Compare conventional encryption, all-quantum-safe encryption, and APQCrypt
+    adaptive encryption using the same recorded traffic.
+  </p>
+</div>
+
+<details class="method">
+  <summary>How the comparison works</summary>
+  <div class="method-body">
+    <p>
+      <b>A. Normal:</b> X25519 key exchange with AES-256-GCM for every flow.
+      This represents conventional encryption and is not quantum-safe.
+    </p>
+    <p>
+      <b>B. All quantum-safe:</b> Hybrid X25519 + ML-KEM-1024 key exchange
+      for every flow, with a higher expected computational cost.
+    </p>
+    <p>
+      <b>C. APQCrypt (adaptive):</b> Selects its encryption policy according
+      to traffic sensitivity and system conditions.
+    </p>
+    <p>
+      <b>Expected outcome:</b> Adaptive encryption should reduce the cost
+      compared with applying quantum-safe key exchange to every flow, while
+      protecting HIGH-sensitivity flows with quantum-safe key exchange.
+    </p>
+    <p>
+      Run the normal pipeline first so a capture and sensitivity scores are
+      available. The first run of each mode should be treated as a warm-up
+      and excluded from counted measurements.
+    </p>
+    <p>
+      <b>Measurement note:</b> These benchmarks measure processing cost on
+      this computer, not live network latency. Results should only be compared
+      when the capture and test conditions are equivalent.
+    </p>
+  </div>
+</details>
+
+<!-- TEST SETUP AND EVIDENCE -->
+<div class="panel">
+  <div class="table-head">
+    <div class="label" style="margin:0">
+      Test setup and measurement evidence
+    </div>
+    <div class="row-actions" style="margin:0" id="datasetBar"></div>
+  </div>
+
+  <div class="grid" id="setupGrid"></div>
+  <div id="setupNotes"></div>
+</div>
+
+<!-- BENCHMARK CONTROLS -->
+<div class="panel">
+  <div class="label">Benchmark controls</div>
+
+  <div class="row-actions">
+    <label for="runsSel" class="hint">Counted runs per mode</label>
+    <select class="ctl" id="runsSel">
+      <option value="1">1 run</option>
+      <option value="3">3 runs</option>
+      <option value="5" selected>5 runs</option>
+      <option value="10">10 runs</option>
+    </select>
+
+    <label for="benchLoad" class="hint">System load</label>
+    <select class="ctl" id="benchLoad">
+      <option value="">Real computer load</option>
+      <option value="AVAILABLE">Force: computer free</option>
+      <option value="CONSTRAINED">Force: computer busy</option>
+    </select>
+
+    <label class="ctl"
+           title="Alternate modes during measurement to reduce time-related bias">
+      <input type="checkbox" id="interleave" checked>
+      Interleave runs
+    </label>
+
+    <button class="btn navy" id="benchBtn" type="button">
+      Run comparison
+    </button>
+
+    <button class="btn" id="measureAll" type="button">
+      Measure all three
+    </button>
+
+    <button class="ghost-btn" id="cancelBtn"
+            type="button" style="display:none">
+      Cancel
+    </button>
+
+    <a class="ghost-btn" href="/download/benchmark" download>
+      Download benchmark_summary.csv
+    </a>
+
+    <span class="mutedtxt" id="benchMsg" aria-live="polite"></span>
+  </div>
+
+  <div class="grid" id="modeCards"></div>
+  <div id="runProgress" aria-live="polite"></div>
+</div>
+
+<!-- MEASUREMENT FINDINGS -->
+<div class="panel">
+  <div class="label">What the measurements say</div>
+  <ul class="findings" id="findings"></ul>
+</div>
+
+<!-- CHARTS -->
+<div id="chartsEmpty" class="panel" style="display:none">
+  <div class="empty-note">
+    No measurements available yet. Run a benchmark to display results.
+  </div>
+</div>
+
+<div id="chartsWrap">
+  <div class="grid-2">
+
+    <div class="panel">
+      <div class="label">Total processing time (s) — lower is better</div>
+      <div class="chart-box"><canvas id="chTime"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Processing time breakdown (s)</div>
+      <div class="chart-box"><canvas id="chStack"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">CPU time used (s) — lower is better</div>
+      <div class="chart-box"><canvas id="chCpu"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Peak process memory (MB)</div>
+      <div class="chart-box"><canvas id="chMem"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Key exchange time (ms) — lower is better</div>
+      <div class="chart-box"><canvas id="chHs"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">
+        Quantum-safe protection (%) — higher is better
+      </div>
+      <div class="chart-box"><canvas id="chPq"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Key-exchange data sent (KB)</div>
+      <div class="chart-box"><canvas id="chKb"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">
+        First-start time vs service-already-running time (s)
+      </div>
+      <div class="chart-box"><canvas id="chSteady"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Extra bytes added by encryption</div>
+      <div class="chart-box"><canvas id="chBytes"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- APPLIED ALGORITHMS -->
+<div class="panel">
+  <div class="label">
+    Algorithms and policies applied in the last counted run
+  </div>
+  <div id="appliedBox"></div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="panel">
+  <div class="label">
+    Benchmark summary: mean ± standard deviation
+  </div>
+
+  <div class="table-scroll">
+    <table id="numTable" class="wrap"></table>
+  </div>
+
+  <div class="sub">
+    HIGH protected represents the share of HIGH-sensitivity flows that
+    received quantum-safe key exchange. Normal and all-quantum-safe modes
+    should be evaluated against sensitivity scores from the same capture.
+    Memory measurements can vary with process startup and system activity.
+    Packets without payload data may not require encryption.
+  </div>
+</div>
+
+<!-- ALGORITHM MICRO-BENCHMARK -->
+<div class="panel">
+  <div class="table-head">
+    <div class="label" style="margin:0">
+      Algorithm costs on this computer
+    </div>
+
+    <div class="row-actions" style="margin:0">
+      <span class="mono mutedtxt" id="microMsg" aria-live="polite"></span>
+
+      <button class="ghost-btn" id="microBtn" type="button">
+        Measure algorithm costs
+      </button>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table id="microTable" class="wrap"></table>
+  </div>
+
+  <div class="sub">
+    The micro-benchmark can help quantify the costs of cryptographic
+    operations, including ML-KEM and symmetric encryption. Reported results
+    depend on the implementation, processor, and test conditions.
+  </div>
+</div>
+
+<!-- INDIVIDUAL RUN EVIDENCE -->
+<div class="panel">
+  <div class="table-head">
+    <div class="label" style="margin:0">
+      Evidence: individual benchmark runs
+    </div>
+
+    <div class="row-actions" style="margin:0">
+      <a class="ghost-btn" href="/api/comparison/export.csv">
+        Download evidence CSV
+      </a>
+
+      {% if user.role == 'super_admin' %}
+      <button class="ghost-btn" id="clearAll" type="button" style="color:var(--high)">
+        Delete all stored runs
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table id="evTable" class="wrap"></table>
+  </div>
+</div>
+
+{% endblock %}
